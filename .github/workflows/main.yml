@@ -19,3 +19,22 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: recording.webm
+
+      # ──────────── Discord 通知 ────────────
+      - name: Notify Discord
+        if: always()          # 成否に関わらず実行
+        run: |
+          # 成功/失敗でメッセージ色と内容を変える
+          if [ "${{ job.status }}" = "success" ]; then
+            COLOR="3066993"   # 緑
+            CONTENT="✅ Workflow **${{ github.workflow }}** が成功しました！"
+          else
+            COLOR="15158332"  # 赤
+            CONTENT="❌ Workflow **${{ github.workflow }}** が失敗しました…"
+          fi
+
+          # Discord に送信
+          curl -s -H "Content-Type: application/json" \
+            -X POST \
+            -d "{\"content\": null, \"embeds\":[{\"title\":\"GitHub Actions 通知\",\"description\":\"$CONTENT\",\"color\":$COLOR}]}" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
